@@ -1,9 +1,8 @@
 #include "StudentWorld.h"
 #include "GameConstants.h"
+#include "Actor.h"
 #include <algorithm>
 #include <string>
-#include "Dirt.h"
-#include "Socrates.h"
 #include <iostream>
 using namespace std;
 

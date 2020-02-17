@@ -82,16 +82,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Actor.cpp" />
-    <ClCompile Include="Dirt.cpp" />
     <ClCompile Include="GameController.cpp" />
     <ClCompile Include="GameWorld.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Socrates.cpp" />
     <ClCompile Include="StudentWorld.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Actor.h" />
-    <ClInclude Include="Dirt.h" />
     <ClInclude Include="freeglut.h" />
     <ClInclude Include="freeglut_std.h" />
     <ClInclude Include="freeglut_ext.h" />
@@ -99,7 +96,6 @@
     <ClInclude Include="GameController.h" />
     <ClInclude Include="GameWorld.h" />
     <ClInclude Include="GraphObject.h" />
-    <ClInclude Include="Socrates.h" />
     <ClInclude Include="SoundFX.h" />
     <ClInclude Include="SpriteManager.h" />
     <ClInclude Include="StudentWorld.h" />

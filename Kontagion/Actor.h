@@ -28,6 +28,25 @@ private:
 
 
 
+class Dirt : public Actor {
+public:
+	Dirt(StudentWorld* world, double startX, double startY);
+
+	void doSomething();
+	bool blocksPassage();
+};
+
+
+class Socrates : public Actor {
+public:
+	Socrates(StudentWorld* world);
+
+	void doSomething();
+private:
+	int m_sprays;
+	int m_flames;
+	int m_pos;
+};
 
 
 #endif // ACTOR_H_
