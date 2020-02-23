@@ -1,4 +1,8 @@
-﻿  StudentWorld.cpp
-C:\Users\blake\source\repos\CS32Proj3\Kontagion\StudentWorld.cpp(43,16): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+﻿  Actor.cpp
+  StudentWorld.cpp
+C:\Users\blake\source\repos\CS32Proj3\Kontagion\StudentWorld.cpp(37,10): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
 C:\Users\blake\source\repos\CS32Proj3\Kontagion\StudentWorld.cpp(44,16): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  Generating Code...
+C:\Users\blake\source\repos\CS32Proj3\Kontagion\StudentWorld.cpp(45,16): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\blake\source\repos\CS32Proj3\Kontagion\StudentWorld.cpp(114): warning C4715: 'StudentWorld::damageableAround': not all control paths return a value
   Kontagion.vcxproj -> C:\Users\blake\source\repos\CS32Proj3\Debug\Kontagion.exe

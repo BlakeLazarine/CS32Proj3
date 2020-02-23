@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <string>
 #include <iostream>
+#include <cmath>
 using namespace std;
 
 GameWorld* createStudentWorld(string assetPath)
@@ -30,13 +31,13 @@ int StudentWorld::init()
 	for (int i = 0; i < numDirt; i++) {
 		int DIRT_RAD = 120;
 		
-		int x = DIRT_RAD;
-		int y = DIRT_RAD;
-		
+		double x, y;
 
-		while (x * x + y * y > DIRT_RAD* DIRT_RAD) {
-			x = randInt(-DIRT_RAD, DIRT_RAD);
-			y = randInt(-DIRT_RAD, DIRT_RAD);			
+		do {
+			int r = sqrt(randInt(0, DIRT_RAD * DIRT_RAD));
+			double theta = randInt(0, 360) * PI / 180;
+			x = r * cos(theta);
+			y = r * sin(theta);
 
 			list<Actor*>::iterator it = takenSpaces.begin();
 			while (it != takenSpaces.end()) {
@@ -45,15 +46,16 @@ int StudentWorld::init()
 				
 
 				if (shiftX * shiftX + shiftY * shiftY < 4 * SPRITE_RADIUS * SPRITE_RADIUS) {
-					int x = DIRT_RAD;
-					int y = DIRT_RAD;
+					x = DIRT_RAD;
+					y = DIRT_RAD;
 					break;
 				}
 				it++;
 			}
 		}
+		while (x * x + y * y > DIRT_RAD* DIRT_RAD);
 		
-		Dirt* d = new Dirt(this, x + VIEW_WIDTH / 2, y + VIEW_HEIGHT / 2);
+		Dirt* d = new Dirt(x + VIEW_WIDTH / 2, y + VIEW_HEIGHT / 2);
 		m_actors.push_back(d);
 		//takenSpaces.push_back(d); // this was for testing if the system worked
 	}
@@ -95,4 +97,18 @@ void StudentWorld::cleanUp()
 	}
 
 	delete soc;
+}
+
+
+bool StudentWorld::playerWithin(double x, double y, double range) {
+	return (pow((soc->getX() - x), 2)) + pow((soc->getY() - y), 2) <= pow(range, 2);
+}
+
+Actor* StudentWorld::damageableAround(double x, double y, double range) {
+	list<Actor*>::iterator it = m_actors.begin();
+	while (it != m_actors.end()) {
+		if ((pow(((*it)->getX() - x), 2)) + pow(((*it)->getY() - y), 2) <= pow(range, 2))
+			return *it;
+		it++;
+	}
 }
