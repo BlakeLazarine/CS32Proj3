@@ -4,6 +4,7 @@
 #include "GameWorld.h"
 #include <string>
 #include <list>
+#include <queue>
 
 class Actor;
 class Socrates;
@@ -19,13 +20,25 @@ public:
     virtual int init();
     virtual int move();
     virtual void cleanUp();
-	bool playerWithin(double x, double y, double range);
-	Actor* damageableAround(double x, double y, double range);
+	Socrates* playerWithin(double x, double y, double range);
+	Actor* damageableOverlap(Actor* act);
+	Actor* bacteriaConsumableOverlap(Actor* act);
+	Actor* nearestBacteriaConsumable(int x, int y, double& dist);
+	void addActor(Actor* actor);
+
+	bool canMoveTo(int x, int y);
+
+	int dirTowards(double sourceX, double sourceY, double endX, double endY);
 
 private:
 	std::list<Actor*> m_actors;
-
+	
 	Socrates* soc;
+	std::queue<Actor*> toBeAdded;
+
+	void spawnPointInRadius(int radius, double& x, double& y);
+	Actor* overlap(int x, int y, bool (*propertyCheck)(Actor*), double range);
+	//bool damageableCheck(Actor* actor);
 
 };
 
