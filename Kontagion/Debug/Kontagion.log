@@ -1,12 +1,1 @@
-﻿  StudentWorld.cpp
-C:\Users\blake\source\repos\CS32Proj3\Kontagion\StudentWorld.cpp(25,9): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\blake\source\repos\CS32Proj3\Kontagion\StudentWorld.cpp(33,16): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\blake\source\repos\CS32Proj3\Kontagion\StudentWorld.cpp(34,16): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\blake\source\repos\CS32Proj3\Kontagion\StudentWorld.cpp(198,39): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-C:\Users\blake\source\repos\CS32Proj3\Kontagion\StudentWorld.cpp(198,26): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-C:\Users\blake\source\repos\CS32Proj3\Kontagion\StudentWorld.cpp(225,39): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-C:\Users\blake\source\repos\CS32Proj3\Kontagion\StudentWorld.cpp(225,26): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-C:\Users\blake\source\repos\CS32Proj3\Kontagion\StudentWorld.cpp(258,16): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\blake\source\repos\CS32Proj3\Kontagion\StudentWorld.cpp(276,60): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-C:\Users\blake\source\repos\CS32Proj3\Kontagion\StudentWorld.cpp(249): warning C4715: 'StudentWorld::overlap': not all control paths return a value
-  Kontagion.vcxproj -> C:\Users\blake\source\repos\CS32Proj3\Debug\Kontagion.exe
+﻿  Kontagion.vcxproj -> C:\Users\blake\source\repos\CS32Proj3\Debug\Kontagion.exe

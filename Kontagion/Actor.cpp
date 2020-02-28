@@ -6,12 +6,12 @@
 // Students:  Add code to this file, Actor.h, StudentWorld.h, and StudentWorld.cpp
 
 Actor::Actor(StudentWorld* world, int imageID, double startX, double startY, int hitPts,
-	Direction dir, int depth, bool isDamageable, bool alivity, double size) :
-	GraphObject(imageID, startX, startY, dir, depth, size) {
+	Direction dir, int depth, bool isDamageable) :
+	GraphObject(imageID, startX, startY, dir, depth) {
 
 	hp = hitPts;
 	initialHP = hp;
-	alive = alivity;
+	alive = true;
 	damageable = isDamageable;
 	m_world = world;
 }
@@ -164,6 +164,20 @@ void Socrates::doSomething() {
 	}
 }
 
+void Socrates::takeDmg(int dmg) {
+
+	Actor::takeDmg(dmg);
+	if (getHP() <= 0) {
+		getWorld()->playSound(SOUND_PLAYER_DIE);
+		getWorld()->increaseScore(100);
+		if (randInt(0, 1))
+			getWorld()->addActor(new Food(getX(), getY()));
+	}
+	else {
+		getWorld()->playSound(SOUND_PLAYER_HURT);
+	}
+}
+
 int Socrates::getSprays() {
 	return m_sprays;
 }
@@ -178,10 +192,14 @@ void Socrates::setFlames(int numFlames) {
 
 
 Projectile::Projectile(int lifespan, StudentWorld* world, int imageID, double startX, double startY,
-	Direction dir, int depth, double size) :
-	Actor(world, imageID, startX, startY, 0, dir, depth, false, true, size) {
+	Direction dir, int depth) :
+	Actor(world, imageID, startX, startY, 0, dir, depth, false) {
 
 	m_lifespan = lifespan;
+}
+
+Projectile::~Projectile() {
+
 }
 
 void Projectile::doSomething() {
@@ -189,10 +207,7 @@ void Projectile::doSomething() {
 		return;
 	}
 	
-	
-	Actor* target = getWorld()->damageableOverlap(this);
-	if (target) {
-		collision(target); 
+	if (attemptCollision()) { 
 		die();
 		return;
 	}
@@ -206,16 +221,16 @@ void Projectile::doSomething() {
 Flame::Flame(StudentWorld* world, double startX, double startY, Direction dir) : Projectile(32, world, IID_FLAME, startX, startY, dir, 1){
 
 }
-void Flame::collision(Actor* target) {
-	target->takeDmg(5);
+bool Flame::attemptCollision() {
+	return getWorld()->damageAt(5, getX(), getY());
 }
 
 Spray::Spray(StudentWorld* world, double startX, double startY, Direction dir) : Projectile(112, world, IID_SPRAY, startX, startY, dir, 1) {
 
 }
 
-void Spray::collision(Actor* target) {
-	target->takeDmg(2);
+bool Spray::attemptCollision() {
+	return getWorld()->damageAt(2, getX(), getY());
 }
 
 
@@ -223,11 +238,15 @@ void Spray::collision(Actor* target) {
 
 
 Goodie::Goodie(int lifespan, StudentWorld* world, int imageID, int startPos,
-	Direction dir, int depth, double size) : Actor(world, imageID, 
+	Direction dir, int depth) : Actor(world, imageID, 
 		VIEW_WIDTH / 2 + VIEW_RADIUS * cos(startPos * PI / 180),
 		VIEW_HEIGHT / 2 + VIEW_RADIUS * sin(startPos * PI / 180),
-		0, dir, depth, true, true, size) {
+		0, dir, depth) {
 	m_lifespan = lifespan;
+}
+
+Goodie::~Goodie(){
+
 }
 
 void Goodie::doSomething() {
@@ -302,12 +321,16 @@ void Fungus::onPickup(Socrates* soc) {
 
 Bacterium::Bacterium(int hurtSound, int dieSound, int strength, StudentWorld* world, int imageID,
 	double startX, double startY, int hitPts,
-	Direction dir, int depth, double size) : 
-	Actor(world, imageID, startX, startY, hitPts, dir, depth, true, true, size) {
+	Direction dir, int depth) : 
+	Actor(world, imageID, startX, startY, hitPts, dir, depth, true) {
 	m_strength = strength;
 	m_dieSound = dieSound;
 	m_hurtSound = hurtSound;
 	foodEaten = 0;
+}
+
+Bacterium::~Bacterium() {
+
 }
 
 bool Bacterium::blocksVictory() {
@@ -341,10 +364,8 @@ void Bacterium::doSomething() {
 			foodEaten = 0;
 		}
 		else {
-			Actor* food = getWorld()->bacteriaConsumableOverlap(this);
-			if (food) {
+			if (getWorld()->eatAt(getX(), getY())) {
 				foodEaten++;
-				food->die();
 			}
 		}
 	}
@@ -381,6 +402,10 @@ Salmonella::Salmonella(StudentWorld* world, double startX, double startY, int hi
 
 }
 
+Salmonella::~Salmonella() {
+
+}
+
 void Salmonella::split(int newx, int newy) {
 	getWorld()->addActor(new Salmonella(getWorld(), newx, newy));
 }
@@ -400,16 +425,17 @@ void Salmonella::move() {
 	}
 	else {
 		double dist = VIEW_HEIGHT;
-		Actor* nearestFood = getWorld()->nearestBacteriaConsumable(getX(), getY(), dist);
+
+		double consumableX, consumableY;
 		
-		if (dist > 128 || !nearestFood) {
+		if (!getWorld()->nearestBacteriaConsumable(getX(), getY(), 128, consumableX, consumableY)) {
 			setDirection(randInt(0, 359));
 			m_movementPlanDist = 10;
 		}
 		else {
 			
 			Direction newDir = getWorld()->dirTowards(getX(), getY(), 
-				nearestFood->getX(), nearestFood->getY());
+				consumableX, consumableY);
 			double x, y;
 			getPositionInThisDirection(newDir, 3, x, y);
 			if (getWorld()->canMoveTo(x, y)) {
@@ -421,8 +447,6 @@ void Salmonella::move() {
 				m_movementPlanDist = 10;
 				
 			}
-			
-
 		}
 	}
 
@@ -482,7 +506,7 @@ void Ecoli::move() {
 	}
 }
 
-Pit::Pit(StudentWorld* world, double x, double y) :Actor(world, IID_PIT, x, y, 0, 0, 1, false, true){
+Pit::Pit(StudentWorld* world, double x, double y) :Actor(world, IID_PIT, x, y, 0, 0, 1, false){
 	reg = 5;
 	agg = 3;
 	ecoli = 2;

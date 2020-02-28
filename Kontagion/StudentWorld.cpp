@@ -6,6 +6,7 @@
 #include <iostream>
 #include <cmath>
 #include <sstream>
+#include <iomanip>
 using namespace std;
 
 GameWorld* createStudentWorld(string assetPath)
@@ -161,8 +162,14 @@ int StudentWorld::move()
 
 	
 	ostringstream oss;
-	oss << "Score: " << getScore() << "  "
-		<< "Level: " << getLevel() << "  "
+	
+	oss.fill('0');
+	if(getScore() >= 0)
+		oss << "Score: " << setw(6) << getScore() << "  ";
+	else
+		oss << "Score: -" << setw(5) << abs(getScore()) << "  ";
+
+	oss << "Level: " << getLevel() << "  "
 		<< "Lives: " << getLives() << "  "
 		<< "Health: " << soc->getHP() << "  "
 		<< "Sprays: " << soc->getSprays() << "  "
@@ -170,7 +177,6 @@ int StudentWorld::move()
 	setGameStatText(oss.str());
 	return GWSTATUS_CONTINUE_GAME;
 }
-
 void StudentWorld::cleanUp()
 {
 	list<Actor*>::iterator it = m_actors.begin();
@@ -178,10 +184,17 @@ void StudentWorld::cleanUp()
 		delete *it;
 		it = m_actors.erase(it);
 	}
+	while (!toBeAdded.empty()) {
+		delete toBeAdded.front();
+		toBeAdded.pop();
+	}
 
 	delete soc;
 }
 
+StudentWorld::~StudentWorld() {
+	cleanUp();
+}
 
 Socrates* StudentWorld::playerWithin(double x, double y, double range) {
 	if ((pow((soc->getX() - x), 2)) + pow((soc->getY() - y), 2) <= pow(range, 2))
@@ -190,79 +203,94 @@ Socrates* StudentWorld::playerWithin(double x, double y, double range) {
 }
 
 
-bool damageableCheck(Actor* actor) {
-	return actor->Damageable();
-}
-
-Actor* StudentWorld::damageableOverlap(Actor* act) {
-	return overlap(act->getX(), act->getY(), &damageableCheck, SPRITE_WIDTH);
-}
-/*
-Actor* StudentWorld::damageableAround(this, double range) {
+Actor* StudentWorld::damageableOverlap(double x, double y) {
 	list<Actor*>::iterator it = m_actors.begin();
-	
 	while (it != m_actors.end()) {
-		
-		//if ((*it)->Damageable() && sqrt((pow(((*it)->getX() - x), 2)) + pow((*it)->getY() - y, 2)) <= 2 * range)
-			//std::cout << sqrt((pow(((*it)->getX() - x), 2)) + pow((*it)->getY() - y, 2)) << std::endl;
 
-		if ((*it)->Damageable() && sqrt((pow(((*it)->getX() - x), 2)) + pow((*it)->getY() - y, 2)) <= range)
+		if ((*it)->isAlive() && (*it)->Damageable() && within(x, y, (*it)->getX(), (*it)->getY(), SPRITE_WIDTH)) {
+
 			return *it;
+		}
 		it++;
-
 	}
-}*/
+	return nullptr;
+}
 
 void StudentWorld::addActor(Actor* actor) {
+	//toBeAdded.push(actor);
 	toBeAdded.push(actor);
 }
 
-
-bool bacteriaConsumableCheck(Actor* actor) {
-	return actor->eatenByBacteria();
+bool StudentWorld::damageAt(int dmg, double x, double y) {
+	Actor* target = damageableOverlap(x, y);
+	if (target) {
+		target->takeDmg(dmg);
+		return true;
+	}
+	return false;
 }
-Actor* StudentWorld::bacteriaConsumableOverlap(Actor* act) {
-	return overlap(act->getX(), act->getY(), &bacteriaConsumableCheck, SPRITE_WIDTH);
+
+bool StudentWorld::eatAt(double x, double y, double range) {
+	Actor* target = bacteriaConsumableAround(x, y, range);
+	if (target) {
+		target->die();
+		return true;
+	}
+	return false;
 }
 
-bool blockPassageCheck(Actor* actor) {
-	return actor->blocksPassage();
+Actor* StudentWorld::bacteriaConsumableAround(double x, double y, double range) {
+	list<Actor*>::iterator it = m_actors.begin();
+	while (it != m_actors.end()) {
+
+		if ((*it)->isAlive() && (*it)->eatenByBacteria() && within(x, y, (*it)->getX(), (*it)->getY(), range)) {
+
+			return *it;
+		}
+		it++;
+	}
+	return nullptr;
 }
 
 bool StudentWorld::canMoveTo(int x, int y) {
 	if (pow(x - VIEW_WIDTH / 2, 2) + pow(y - VIEW_HEIGHT / 2, 2) >= pow(VIEW_RADIUS, 2))
 		return false;
-	return !overlap(x, y, &blockPassageCheck, SPRITE_WIDTH / 2);
-}
-
-
-Actor* StudentWorld::overlap(int x, int y, bool (*propertyCheck)(Actor*), double range) {
 	list<Actor*>::iterator it = m_actors.begin();
+	
 	while (it != m_actors.end()) {
-
-		if ((*it)->isAlive() && propertyCheck(*it) && (pow(((*it)->getX() - x), 2)) + pow(((*it)->getY() - y), 2) <= pow(range, 2)) {
-			
-			return *it;
+		if ((*it)->isAlive() && (*it)->blocksPassage() && within(x, y, (*it)->getX(), (*it)->getY(), SPRITE_WIDTH / 2)) {
+			return false;
 		}
 		it++;
 	}
+	
+	return true;
 }
 
 
-Actor* StudentWorld::nearestBacteriaConsumable(int x, int y, double& shortestDist) {
+bool StudentWorld::within(double x1, double y1, double x2, double y2, double range) {
+	return (pow((x1 - x2), 2)) + pow((y1 - y2), 2) <= pow(range, 2);
+}
+
+bool StudentWorld::nearestBacteriaConsumable(double x, double y, double range, double& endx, double& endy) {
 	list<Actor*>::iterator it = m_actors.begin();
+	double shortestDist = -1;
+
 	Actor* nearest = nullptr;
-	
 	while (it != m_actors.end()) {
 
 		int thisDist = sqrt((pow(((*it)->getX() - x), 2)) + pow(((*it)->getY() - y), 2));
-		if ((*it)->isAlive() && (*it)->eatenByBacteria() && thisDist < shortestDist) {
+		if ((*it)->isAlive() && thisDist < range && (*it)->eatenByBacteria() && (thisDist < shortestDist || shortestDist == -1)) {
 			shortestDist = thisDist;
-			nearest = *it;
+			nearest = (*it);
 		}
 		it++;
 	}
-	return nearest;
+	if (nearest) {
+		endx = nearest->getX();
+		endy = nearest->getY();
+	}
+	return shortestDist != -1;
 }
 
 int StudentWorld::dirTowards(double sourceX, double sourceY, double endX, double endY) {
